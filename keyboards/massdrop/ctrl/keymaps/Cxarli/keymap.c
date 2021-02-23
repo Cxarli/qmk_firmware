@@ -1,23 +1,7 @@
-#include QMK_KEYBOARD_H
-
-enum ctrl_keycodes {
-    U_T_AUTO = SAFE_RANGE,  // USB Extra Port Toggle Auto Detect / Always Active
-    U_T_AGCR,               // USB Toggle Automatic GCR control
-    DBG_TOG,                // DEBUG Toggle On / Off
-    DBG_MTRX,               // DEBUG Toggle Matrix Prints
-    DBG_KBD,                // DEBUG Toggle Keyboard Prints
-    DBG_MOU,                // DEBUG Toggle Mouse Prints
-    MD_BOOT,                // Restart into bootloader after hold timeout
-};
-
-enum layers {
-    DV = 0,  // dvorak
-    QW,      // qwerty
-    FN,      // right fn
-};
+#include "keymap.h"
 
 // clang-format off
-const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
+const uint16_t PROGMEM keymaps[N_layers][MATRIX_ROWS][MATRIX_COLS] = {
     [DV] = LAYOUT(
         KC_ESC,  KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,             KC_PSCR, KC_SLCK, TG(QW), \
         KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_LBRC, KC_RBRC, KC_BSPC,   KC_INS,  KC_HOME, KC_PGUP, \
@@ -38,26 +22,80 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [FN] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            _______, _______, _______, \
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, KC_VOLU, \
+        _______, MY_RGBT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, KC_VOLU, \
         _______, RGB_SPD, RGB_VAI, RGB_SPI, RGB_HUI, RGB_SAI, _______, U_T_AUTO,U_T_AGCR,_______, _______, _______, _______, _______,   _______, _______, KC_VOLD, \
         _______, RGB_RMOD,RGB_VAD, RGB_MOD, RGB_HUD, RGB_SAD, _______, _______, _______, _______, _______, _______, _______, \
         _______, RGB_TOG, _______, _______, _______, MD_BOOT, NK_TOGG, _______, _______, _______, _______, _______,                              KC_MUTE, \
         _______, _______, _______,                   _______,                            _______, _______, _______, _______,            KC_MPRV, KC_MPLY, KC_MNXT \
     ),
-
-
-    /*
-    [X] = LAYOUT(
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            _______, _______, _______, \
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______, \
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, _______, \
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
-        _______, _______, _______, _______, _______, _______, NK_TOGG, _______, _______, _______, _______, _______,                              _______, \
-        _______, _______, _______,                   _______,                            _______, _______, _______, _______,            _______, _______, _______ \
-    ),
-    */
 };
+
+#ifdef _______
+#define REV___
+#undef _______
+#endif
+#define _______ {RGB_OFF}
+
+const uint8_t PROGMEM ledmap[N_layers][DRIVER_LED_TOTAL][3] = {
+    [DV] = {
+        CYAN,    PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,           PURPLE,  PURPLE,  GREEN,
+        PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,
+        PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,
+        PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  CYAN,
+        PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,  PURPLE,                             CYAN,
+        PURPLE,  PURPLE,  PURPLE,                    PURPLE,                             PURPLE,  PURPLE,  PURPLE,  PURPLE,           CYAN,    CYAN,    CYAN,
+
+        // bottom right, 12
+        PURPLE, PURPLE, PURPLE, MAGENTA,  MAGENTA, MAGENTA, MAGENTA, MAGENTA,  MAGENTA, MAGENTA, PURPLE, PURPLE,
+        // bottom left, 5
+        PURPLE, PURPLE, PURPLE, PURPLE, PURPLE,
+        // top left, 11
+        PURPLE, PURPLE, PURPLE, PINK, PINK, PINK, PINK, PINK, PINK, PURPLE, PURPLE,
+        // top right, 4
+        PURPLE, PURPLE, PURPLE, PURPLE,
+    },
+
+    [QW] = {
+        CYAN,    GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,            GREEN,   GREEN,   PURPLE,
+        GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,
+        GREEN,   GREEN,   RED,     GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,
+        GREEN,   RED,     RED,     RED,     GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   CYAN,
+        GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,   GREEN,                              CYAN,
+        GREEN,   GREEN,   GREEN,                     GREEN,                              GREEN,   GREEN,   GREEN,   GREEN,            CYAN,    CYAN,    CYAN,
+
+        // bottom right, 12
+        GREEN, GREEN, GREEN, SPRING,  SPRING, SPRING, SPRING, SPRING,  SPRING, SPRING, GREEN, GREEN,
+        // bottom left, 5
+        GREEN, GREEN, GREEN, GREEN, GREEN,
+        // top left, 11
+        GREEN, GREEN, GREEN, SPRING, SPRING, SPRING, SPRING, SPRING, SPRING, GREEN, GREEN,
+        // top right, 4
+        GREEN, GREEN, GREEN, GREEN,
+    },
+
+    [FN] = {
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, ORANGE,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, ORANGE,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, ORANGE,  _______, _______, _______, _______, _______, _______,                            ORANGE,
+        _______, _______, _______,                   _______,                            _______, BLUE,    _______, _______,          ORANGE,  ORANGE,  ORANGE,
+
+        RED, RED, RED, RED, RED, RED, RED, RED,
+        RED, RED, RED, RED, RED, RED, RED, RED,
+        RED, RED, RED, RED, RED, RED, RED, RED,
+        RED, RED, RED, RED, RED, RED, RED, RED,
+    },
+};
+
+#undef _______
+#ifdef REV___
+#define _______ KC_TRNS
+#undef REV___
+#endif
 // clang-format on
+
+
 
 // Runs just one time when the keyboard initializes.
 void matrix_init_user(void) {}
@@ -65,46 +103,68 @@ void matrix_init_user(void) {}
 // Runs constantly in the background, in a loop.
 void matrix_scan_user(void) {}
 
-/*
 // Runs after the keyboard is done initialising.
 void keyboard_post_init_user(void) {
+    rgb_matrix_enable();
     rgb_matrix_enable_noeeprom();
-    rgb_matrix_mode(RGB_MATRIX_SOLID_COLOR);
-    rgb_matrix_set_color_all(RGB_PURPLE);
 }
-*/
 
 
-
-#define MODS_SHIFT (get_mods() & MOD_MASK_SHIFT)
-#define MODS_CTRL (get_mods() & MOD_MASK_CTRL)
-#define MODS_ALT (get_mods() & MOD_MASK_ALT)
-
-
-static void toggle_rgb(void)
+static void toggle_led_mode(void)
 {
+    enum rgb_modes {
+        rgb_first = LED_FLAG_ALL,
+        rgb_second = LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER | LED_FLAG_INDICATOR,
+        rgb_third = LED_FLAG_UNDERGLOW,
+        rgb_fourth = LED_FLAG_NONE,
+    };
+
     switch (rgb_matrix_get_flags()) {
-        case LED_FLAG_ALL:
-            rgb_matrix_set_flags(LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER | LED_FLAG_INDICATOR);
+        case rgb_first:
+            rgb_matrix_set_flags(rgb_second);
             rgb_matrix_set_color_all(RGB_OFF);
             break;
 
-        case (LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER | LED_FLAG_INDICATOR):
-            rgb_matrix_set_flags(LED_FLAG_UNDERGLOW);
+        case rgb_second:
+            rgb_matrix_set_flags(rgb_third);
             rgb_matrix_set_color_all(RGB_OFF);
             break;
 
-        case LED_FLAG_UNDERGLOW:
-            rgb_matrix_set_flags(LED_FLAG_NONE);
+        case rgb_third:
+            rgb_matrix_set_flags(rgb_fourth);
             rgb_matrix_disable_noeeprom();
             break;
 
+        case rgb_fourth:
         default:
-            rgb_matrix_set_flags(LED_FLAG_ALL);
+            rgb_matrix_set_flags(rgb_first);
+            rgb_matrix_set_color_all(RGB_PURPLE);
             rgb_matrix_enable_noeeprom();
             break;
     }
 }
+
+
+static void set_layer_color(int layer) {
+    for (int i = 0; i < DRIVER_LED_TOTAL; i++) {
+        RGB rgb = {
+            .r = pgm_read_byte(&ledmap[layer][i][0]),
+            .g = pgm_read_byte(&ledmap[layer][i][1]),
+            .b = pgm_read_byte(&ledmap[layer][i][2]),
+        };
+
+        rgb_matrix_set_color(i, rgb.r, rgb.g, rgb.b);
+    }
+}
+
+void rgb_matrix_indicators_user(void) {
+    // ignore if we have NONE or UNDERGLOW mode on
+    // if (rgb_matrix_get_flags() & (LED_FLAG_NONE | LED_FLAG_UNDERGLOW)) return;
+
+    // determine per layer
+    set_layer_color(get_highest_layer(layer_state));
+}
+
 
 
 // Called whenever a key is recorded
@@ -159,7 +219,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
 
         case RGB_TOG:
-            if (record->event.pressed) toggle_rgb();
+            if (record->event.pressed) toggle_led_mode();
+            return false;
+
+        case MY_RGBT:
+            rgb_matrix_set_color(10, RGB_GREEN);
             return false;
 
         default:
