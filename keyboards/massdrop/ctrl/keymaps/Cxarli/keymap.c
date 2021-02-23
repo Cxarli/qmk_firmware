@@ -22,9 +22,9 @@ const uint16_t PROGMEM keymaps[N_layers][MATRIX_ROWS][MATRIX_COLS] = {
 
     [FN] = LAYOUT(
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,            _______, _______, _______, \
-        _______, MY_RGBT, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, KC_VOLU, \
-        _______, RGB_SPD, RGB_VAI, RGB_SPI, RGB_HUI, RGB_SAI, _______, U_T_AUTO,U_T_AGCR,_______, _______, _______, _______, _______,   _______, _______, KC_VOLD, \
-        _______, RGB_RMOD,RGB_VAD, RGB_MOD, RGB_HUD, RGB_SAD, _______, _______, _______, _______, _______, _______, _______, \
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,   _______, _______, KC_VOLU, \
+        _______, _______, _______, _______, _______, _______, _______, U_T_AUTO,U_T_AGCR,_______, _______, _______, _______, _______,   _______, _______, KC_VOLD, \
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, \
         _______, RGB_TOG, _______, _______, _______, MD_BOOT, NK_TOGG, _______, _______, _______, _______, _______,                              KC_MUTE, \
         _______, _______, _______,                   _______,                            _______, _______, _______, _______,            KC_MPRV, KC_MPLY, KC_MNXT \
     ),
@@ -78,9 +78,10 @@ const uint8_t PROGMEM ledmap[N_layers][DRIVER_LED_TOTAL][3] = {
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, ORANGE,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, ORANGE,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, ORANGE,  _______, _______, _______, _______, _______, _______,                            ORANGE,
+        _______, ORANGE,  _______, _______, _______, ORANGE,  _______, _______, _______, _______, _______, _______,                            ORANGE,
         _______, _______, _______,                   _______,                            _______, BLUE,    _______, _______,          ORANGE,  ORANGE,  ORANGE,
 
+        // 32x red
         RED, RED, RED, RED, RED, RED, RED, RED,
         RED, RED, RED, RED, RED, RED, RED, RED,
         RED, RED, RED, RED, RED, RED, RED, RED,
@@ -112,35 +113,12 @@ void keyboard_post_init_user(void) {
 
 static void toggle_led_mode(void)
 {
-    enum rgb_modes {
-        rgb_first = LED_FLAG_ALL,
-        rgb_second = LED_FLAG_KEYLIGHT | LED_FLAG_MODIFIER | LED_FLAG_INDICATOR,
-        rgb_third = LED_FLAG_UNDERGLOW,
-        rgb_fourth = LED_FLAG_NONE,
-    };
-
-    switch (rgb_matrix_get_flags()) {
-        case rgb_first:
-            rgb_matrix_set_flags(rgb_second);
-            rgb_matrix_set_color_all(RGB_OFF);
-            break;
-
-        case rgb_second:
-            rgb_matrix_set_flags(rgb_third);
-            rgb_matrix_set_color_all(RGB_OFF);
-            break;
-
-        case rgb_third:
-            rgb_matrix_set_flags(rgb_fourth);
-            rgb_matrix_disable_noeeprom();
-            break;
-
-        case rgb_fourth:
-        default:
-            rgb_matrix_set_flags(rgb_first);
-            rgb_matrix_set_color_all(RGB_PURPLE);
-            rgb_matrix_enable_noeeprom();
-            break;
+    if (rgb_matrix_get_flags() & LED_FLAG_ALL) {
+        rgb_matrix_set_flags(LED_FLAG_NONE);
+        rgb_matrix_disable_noeeprom();
+    } else {
+        rgb_matrix_set_flags(LED_FLAG_ALL);
+        rgb_matrix_enable_noeeprom();
     }
 }
 
@@ -158,8 +136,8 @@ static void set_layer_color(int layer) {
 }
 
 void rgb_matrix_indicators_user(void) {
-    // ignore if we have NONE or UNDERGLOW mode on
-    // if (rgb_matrix_get_flags() & (LED_FLAG_NONE | LED_FLAG_UNDERGLOW)) return;
+    // ignore if we have NONE mode on
+    if (rgb_matrix_get_flags() & LED_FLAG_NONE) return;
 
     // determine per layer
     set_layer_color(get_highest_layer(layer_state));
@@ -211,19 +189,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case MD_BOOT:
             if (record->event.pressed) {
                 key_timer = timer_read32();
-            } else {
-                if (timer_elapsed32(key_timer) >= 500) {
-                    reset_keyboard();
-                }
+            } else if (timer_elapsed32(key_timer) >= 500) {
+                reset_keyboard();
             }
+
             return false;
 
         case RGB_TOG:
             if (record->event.pressed) toggle_led_mode();
-            return false;
-
-        case MY_RGBT:
-            rgb_matrix_set_color(10, RGB_GREEN);
             return false;
 
         default:

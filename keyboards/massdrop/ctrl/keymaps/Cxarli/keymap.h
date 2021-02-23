@@ -8,8 +8,6 @@ enum ctrl_keycodes {
     DBG_KBD,                // DEBUG Toggle Keyboard Prints
     DBG_MOU,                // DEBUG Toggle Mouse Prints
     MD_BOOT,                // Restart into bootloader after hold timeout
-
-    MY_RGBT,
 };
 
 enum layers {
